@@ -22,6 +22,7 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 async function run() {
     try {
         const usersCollection = client.db('resaleProduct').collection('users');
+        const productsCollection = client.db('resaleProduct').collection('products');
         const categoryCollection = client.db('resaleProduct').collection('categories');
 
         app.get('/jwt', async (req, res) => {
@@ -59,6 +60,13 @@ async function run() {
         // get all categories
         app.get('/categories', async (req, res) => {
             const result = await categoryCollection.find({}).toArray();
+            res.send(result);
+        })
+
+        // add product
+        app.post('/addproduct', async (req, res) => {
+            const product = req.body;
+            const result = await productsCollection.insertOne(product);
             res.send(result);
         })
     }
