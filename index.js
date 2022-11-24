@@ -41,7 +41,12 @@ async function run() {
             res.send(result);
         })
 
-
+        // get all seller
+        app.get('/roleseller', async (req, res) => {
+            const query = { role: 'seller' };
+            const result = await usersCollection.find(query).toArray();
+            res.send(result);
+        })
 
         // save user to database
         app.post('/users', async (req, res) => {
