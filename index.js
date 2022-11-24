@@ -22,6 +22,7 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 async function run() {
     try {
         const usersCollection = client.db('resaleProduct').collection('users');
+        const categoryCollection = client.db('resaleProduct').collection('categories');
 
         app.get('/jwt', async (req, res) => {
             const email = req.query.email;
@@ -34,7 +35,7 @@ async function run() {
             res.status(403).send({ accessToken: '' });
         })
 
-        // get all user 
+        // get all general user 
         app.get('/roleuser', async (req, res) => {
             const query = { role: 'user' };
             const result = await usersCollection.find(query).toArray();
@@ -52,6 +53,12 @@ async function run() {
         app.post('/users', async (req, res) => {
             const user = req.body;
             const result = await usersCollection.insertOne(user);
+            res.send(result);
+        })
+
+        // get all categories
+        app.get('/categories', async (req, res) => {
+            const result = await categoryCollection.find({}).toArray();
             res.send(result);
         })
     }
