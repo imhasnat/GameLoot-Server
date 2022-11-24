@@ -34,7 +34,12 @@ async function run() {
             res.status(403).send({ accessToken: '' });
         })
 
-
+        // get all user 
+        app.get('/roleuser', async (req, res) => {
+            const query = { role: 'user' };
+            const result = await usersCollection.find(query).toArray();
+            res.send(result);
+        })
 
 
 
