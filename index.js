@@ -38,7 +38,7 @@ async function run() {
 
         // get all general user 
         app.get('/roleuser', async (req, res) => {
-            const query = { role: 'user' };
+            const query = { role: 'buyer' };
             const result = await usersCollection.find(query).toArray();
             res.send(result);
         })
