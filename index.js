@@ -126,6 +126,14 @@ async function run() {
             res.send(products);
         })
 
+        // get all orders: buyer
+        app.get('/booking', async (req, res) => {
+            const email = req.query.email;
+            const query = { email: email };
+            const booking = await bookingCollection.find(query).toArray();
+            res.send(booking);
+        })
+
         // add booking for a buyer: buyer
         app.post('/booking', async (req, res) => {
             const booking = req.body;
