@@ -40,7 +40,15 @@ async function run() {
         const productsCollection = client.db('resaleProduct').collection('products');
         const categoryCollection = client.db('resaleProduct').collection('categories');
 
-
+        const verifyAdmin = async (req, res, next) => {
+            const decodedEmail = req.decoded.email;
+            const query = { email: decodedEmail }
+            const user = await usersCollection.findOne(query);
+            if (user.role !== 'admin') {
+                return res.status(403).send({ message: 'Forbidden access' })
+            }
+            next();
+        }
 
         app.get('/jwt', async (req, res) => {
             const email = req.query.email;
