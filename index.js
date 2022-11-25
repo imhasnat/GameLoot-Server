@@ -39,6 +39,7 @@ async function run() {
         const usersCollection = client.db('resaleProduct').collection('users');
         const productsCollection = client.db('resaleProduct').collection('products');
         const categoryCollection = client.db('resaleProduct').collection('categories');
+        const bookingCollection = client.db('resaleProduct').collection('booking');
 
         // admin verification
         const verifyAdmin = async (req, res, next) => {
@@ -88,7 +89,7 @@ async function run() {
             res.send(result);
         })
 
-        // save user to database
+        // save all user to database
         app.post('/users', async (req, res) => {
             const user = req.body;
             const result = await usersCollection.insertOne(user);
@@ -110,20 +111,29 @@ async function run() {
         })
 
         // add product: seller
-        app.post('/addproduct', async (req, res) => {
+        app.post('/products', async (req, res) => {
             const product = req.body;
             const result = await productsCollection.insertOne(product);
             res.send(result);
         })
 
         // get products by category id: buyer
-        app.get('/category/:id', async (req, res) => {
+        app.get('/products/:id', async (req, res) => {
             const id = req.params.id;
             console.log(id);
             const query = { category_id: id };
             const products = await productsCollection.find(query).toArray();
             res.send(products);
         })
+
+        // add booking for a buyer: buyer
+        app.post('/booking', async (req, res) => {
+            const booking = req.body;
+            const result = await bookingCollection.insertOne(booking);
+            res.send(result);
+        })
+
+
     }
     finally { }
 }
