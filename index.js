@@ -50,6 +50,16 @@ async function run() {
             next();
         }
 
+        const verifySeller = async (req, res, next) => {
+            const decodedEmail = req.decoded.email;
+            const query = { email: decodedEmail }
+            const user = await usersCollection.findOne(query);
+            if (user.role !== 'seller') {
+                return res.status(403).send({ message: 'Forbidden access' })
+            }
+            next();
+        }
+
         app.get('/jwt', async (req, res) => {
             const email = req.query.email;
             const query = { email: email };
