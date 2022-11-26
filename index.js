@@ -144,6 +144,10 @@ async function run() {
         })
 
         // all reports
+        app.get('/report', async (req, res) => {
+            const result = await reportsCollection.find({}).toArray();
+            res.send(result);
+        })
 
         // product report to admin
         app.post('/report', async (req, res) => {
