@@ -76,20 +76,6 @@ async function run() {
             res.status(403).send({ accessToken: '' });
         })
 
-        // get all general user: admin 
-        app.get('/roleuser', async (req, res) => {
-            const query = { role: 'buyer' };
-            const result = await usersCollection.find(query).toArray();
-            res.send(result);
-        })
-
-        // get all seller: admin
-        app.get('/roleseller', async (req, res) => {
-            const query = { role: 'seller' };
-            const result = await usersCollection.find(query).toArray();
-            res.send(result);
-        })
-
         // get user role by email
         app.get('/users/role', async (req, res) => {
             const email = req.query.email;
@@ -137,17 +123,9 @@ async function run() {
         // get products by category id: buyer
         app.get('/products/:id', async (req, res) => {
             const id = req.params.id;
-            console.log(id);
             const query = { category_id: id };
             const products = await productsCollection.find(query).toArray();
             res.send(products);
-        })
-
-        // product report to admin
-        app.post('/report', async (req, res) => {
-            const product = req.body;
-            const result = await reportsCollection.insertOne(product);
-            res.send(result);
         })
 
         // get all orders: buyer
@@ -162,6 +140,25 @@ async function run() {
         app.post('/booking', async (req, res) => {
             const booking = req.body;
             const result = await bookingCollection.insertOne(booking);
+            res.send(result);
+        })
+
+        // all reports
+
+        // product report to admin
+        app.post('/report', async (req, res) => {
+            const product = req.body;
+            const result = await reportsCollection.insertOne(product);
+            res.send(result);
+        })
+
+        // get all general user: admin 
+
+
+        // get all seller: admin
+        app.get('/role/sellers', async (req, res) => {
+            const query = { role: 'seller' };
+            const result = await usersCollection.find(query).toArray();
             res.send(result);
         })
 
