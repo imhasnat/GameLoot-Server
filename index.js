@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const app = express();
 const jwt = require('jsonwebtoken');
+const { query } = require('express');
 const port = process.env.PORT || 5000;
 require('dotenv').config()
 const stripe = require('stripe')(process.env.STRIPE_KEY);
@@ -41,6 +42,8 @@ async function run() {
         const reportsCollection = client.db('resaleProduct').collection('reports');
         const categoryCollection = client.db('resaleProduct').collection('categories');
         const bookingCollection = client.db('resaleProduct').collection('booking');
+        const paymentsCollection = client.db('resaleProduct').collection('payments');
+        const advertiseCollection = client.db('resaleProduct').collection('advertise');
 
         // admin verification
         const verifyAdmin = async (req, res, next) => {
@@ -81,6 +84,7 @@ async function run() {
             const email = req.query.email;
             const query = { email: email };
             const result = await usersCollection.find(query).project({ role: 1 }).toArray()
+            // console.log(result);
             res.send(result)
         })
 
@@ -123,7 +127,7 @@ async function run() {
         // get products by category id: buyer
         app.get('/products/:id', async (req, res) => {
             const id = req.params.id;
-            const query = { category_id: id };
+            const query = { category_id: id, status: true };
             const products = await productsCollection.find(query).toArray();
             res.send(products);
         })
@@ -134,6 +138,13 @@ async function run() {
             const query = { _id: ObjectId(id) };
             const result = await productsCollection.deleteOne(query);
             res.send(result);
+        })
+
+        app.get('/booking/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const booking = await bookingCollection.findOne(query);
+            res.send(booking);
         })
 
         // get all orders: buyer
@@ -147,6 +158,15 @@ async function run() {
         // add booking for a buyer: buyer
         app.post('/booking', async (req, res) => {
             const booking = req.body;
+            const id = booking.productId;
+            const email = booking.email;
+            const query = { productId: id, email: email };
+            const alreadyBooked = await bookingCollection.findOne(query);
+
+            if (alreadyBooked) {
+                return res.send({ message: 'You already booked this item' })
+            }
+
             const result = await bookingCollection.insertOne(booking);
             res.send(result);
         })
@@ -178,6 +198,62 @@ async function run() {
             res.send(result);
         })
 
+
+        // payment
+        app.post('/create-payment-intent', async (req, res) => {
+            const booking = req.body;
+            const price = booking.price;
+            const amount = price * 100;
+
+            const paymentIntent = await stripe.paymentIntents.create({
+                amount: amount,
+                currency: 'usd',
+                'payment_method_types': [
+                    'card'
+                ]
+            })
+            res.send({
+                clientSecret: paymentIntent.client_secret,
+            })
+        })
+
+        app.post('/payments', async (req, res) => {
+            const payment = req.body;
+            const result = await paymentsCollection.insertOne(payment);
+
+            const bookingId = payment.bookingId;
+            const filterBooking = { _id: ObjectId(bookingId) };
+            const updatedBooking = {
+                $set: {
+                    paid: true,
+                    transactionId: payment.transactionId
+                }
+            }
+            const updatedBookingResult = await bookingCollection.updateOne(filterBooking, updatedBooking);
+
+            const productId = payment.productId;
+            const filterProduct = { _id: ObjectId(productId) };
+            const updateProduct = {
+                $set: {
+                    advertise: false,
+                    status: false
+                }
+            }
+            const updateProductResult = await productsCollection.updateOne(filterProduct, updateProduct);
+            // const updateAdvertiseResult = await advertiseCollection.updateOne(filterProduct, updateProduct);
+
+            const filterProductInBooking = { productId: productId }
+            const updateBookedProduct = {
+                $set: {
+                    status: false,
+                }
+            }
+            const updatedBookedProductResult = await bookingCollection.updateMany(filterProductInBooking, updateBookedProduct);
+
+            //advertise collection update
+
+            res.send(result);
+        })
 
     }
     finally { }
