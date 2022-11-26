@@ -89,7 +89,15 @@ async function run() {
             res.send(result);
         })
 
-        // get user by email
+        // get user role by email
+        app.get('/users/role', async (req, res) => {
+            const email = req.query.email;
+            const query = { email: email };
+            const result = await usersCollection.find(query).project({ role: 1 }).toArray()
+            res.send(result)
+        })
+
+        // get whether user verified or not by email
         app.get('/users/verified', async (req, res) => {
             const email = req.query.email;
             const query = { email: email };
