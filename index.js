@@ -153,7 +153,11 @@ async function run() {
         })
 
         // get all general user: admin 
-
+        app.get('/role/buyers', async (req, res) => {
+            const query = { role: 'buyer' };
+            const result = await usersCollection.find(query).toArray();
+            res.send(result);
+        })
 
         // get all seller: admin
         app.get('/role/sellers', async (req, res) => {
