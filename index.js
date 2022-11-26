@@ -89,6 +89,14 @@ async function run() {
             res.send(result);
         })
 
+        // get user by email
+        app.get('/users/verified', async (req, res) => {
+            const email = req.query.email;
+            const query = { email: email };
+            const result = await usersCollection.find(query).project({ verified: 1 }).toArray()
+            res.send(result)
+        })
+
         // save all user to database
         app.post('/users', async (req, res) => {
             const user = req.body;
