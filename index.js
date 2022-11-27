@@ -124,6 +124,26 @@ async function run() {
             res.send(result);
         })
 
+        //
+
+        // add avertise for a product: seller
+        app.post('/product/advertise', async (req, res) => {
+            const product = req.body;
+            console.log(product.productId);
+            const result = await advertiseCollection.insertOne(product);
+
+            const id = product.productId;
+            const filter = { _id: ObjectId(id) };
+            const updateDoc = {
+                $set: {
+                    advertise: true
+                }
+            }
+            const changeAdvertise = await productsCollection.updateOne(filter, updateDoc);
+
+            res.send(result);
+        })
+
         // get products by category id: buyer
         app.get('/products/:id', async (req, res) => {
             const id = req.params.id;
@@ -132,7 +152,7 @@ async function run() {
             res.send(products);
         })
 
-        // delete product by product id
+        // delete product by product id: seller
         app.delete('/product/delete/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
@@ -140,6 +160,7 @@ async function run() {
             res.send(result);
         })
 
+        // 
         app.get('/booking/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
@@ -171,13 +192,13 @@ async function run() {
             res.send(result);
         })
 
-        // all reports
+        // all reports : admin
         app.get('/report', async (req, res) => {
             const result = await reportsCollection.find({}).toArray();
             res.send(result);
         })
 
-        // product report to admin
+        // product report to admin : buyer
         app.post('/report', async (req, res) => {
             const product = req.body;
             const result = await reportsCollection.insertOne(product);
@@ -222,11 +243,11 @@ async function run() {
             res.send(result);
         })
 
+        // verify seller badge: admin
         app.post('/seller/verify/:id', async (req, res) => {
             const adminEmail = req.query.email;
             const id = req.params.id;
             const data = req.body;
-            // console.log(data.email);
             const filter = { _id: ObjectId(id) };
             const updatedDoc = {
                 $set: {
