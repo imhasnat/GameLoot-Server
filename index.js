@@ -124,7 +124,11 @@ async function run() {
             res.send(result);
         })
 
-        //
+        // get all advertise : general
+        app.get('/product/advertise', async (req, res) => {
+            const result = await advertiseCollection.find({ status: true }).toArray();
+            res.send(result);
+        })
 
         // add avertise for a product: seller
         app.post('/product/advertise', async (req, res) => {
@@ -309,7 +313,6 @@ async function run() {
                 }
             }
             const updateProductResult = await productsCollection.updateOne(filterProduct, updateProduct);
-            // const updateAdvertiseResult = await advertiseCollection.updateOne(filterProduct, updateProduct);
 
             const filterProductInBooking = { productId: productId }
             const updateBookedProduct = {
@@ -318,6 +321,7 @@ async function run() {
                 }
             }
             const updatedBookedProductResult = await bookingCollection.updateMany(filterProductInBooking, updateBookedProduct);
+            const updateAdvertiseResult = await advertiseCollection.updateOne(filterProductInBooking, updateBookedProduct);
 
             //advertise collection update
 
