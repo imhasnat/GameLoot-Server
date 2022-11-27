@@ -92,7 +92,7 @@ async function run() {
         app.get('/users/verified', async (req, res) => {
             const email = req.query.email;
             const query = { email: email };
-            const result = await usersCollection.find(query).project({ verified: 1 }).toArray()
+            const result = await usersCollection.find(query).project({ verified: 1, email: 1 }).toArray()
             res.send(result)
         })
 
@@ -206,6 +206,7 @@ async function run() {
             res.send(result);
         })
 
+        // delete seller : admin
         app.delete('/seller/delete/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
@@ -213,10 +214,35 @@ async function run() {
             res.send(result);
         })
 
+        // delete report : admin
         app.delete('/report/delete/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
             const result = await reportsCollection.deleteOne(query);
+            res.send(result);
+        })
+
+        app.post('/seller/verify/:id', async (req, res) => {
+            const adminEmail = req.query.email;
+            const id = req.params.id;
+            const data = req.body;
+            // console.log(data.email);
+            const filter = { _id: ObjectId(id) };
+            const updatedDoc = {
+                $set: {
+                    verified: data.verified
+                }
+            }
+            const result = await usersCollection.updateOne(filter, updatedDoc);
+
+            const emailFilter = { sellerEmail: data.email };
+            const updateProductBadge = {
+                $set: {
+                    verified: true,
+                }
+            }
+            const updateProduct = await productsCollection.updateMany(emailFilter, updateProductBadge);
+
             res.send(result);
         })
 
