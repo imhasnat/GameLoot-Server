@@ -177,7 +177,7 @@ async function run() {
             const email = req.query.email;
             const query = { email: email };
             const booking = await bookingCollection.find(query).toArray();
-            res.send(booking);
+            res.send({ found: true });
         })
 
         // add booking for a buyer: buyer
@@ -205,6 +205,16 @@ async function run() {
         // product report to admin : buyer
         app.post('/report', async (req, res) => {
             const product = req.body;
+
+            const id = product.productId
+            const email = product.email;
+            const query = { productId: id, email: email };
+            const alreadyReported = await reportsCollection.findOne(query);
+
+            if (alreadyReported) {
+                return res.send({ message: 'You already Reported this product' })
+            }
+
             const result = await reportsCollection.insertOne(product);
             res.send(result);
         })
