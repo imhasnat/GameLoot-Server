@@ -133,7 +133,7 @@ async function run() {
         })
 
         // delete product by product id
-        app.delete('/products/delete/:id', async (req, res) => {
+        app.delete('/product/delete/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
             const result = await productsCollection.deleteOne(query);
@@ -195,6 +195,28 @@ async function run() {
         app.get('/role/sellers', async (req, res) => {
             const query = { role: 'seller' };
             const result = await usersCollection.find(query).toArray();
+            res.send(result);
+        })
+
+        // delete buyer : admin
+        app.delete('/buyer/delete/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const result = await usersCollection.deleteOne(query);
+            res.send(result);
+        })
+
+        app.delete('/seller/delete/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const result = await usersCollection.deleteOne(query);
+            res.send(result);
+        })
+
+        app.delete('/report/delete/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const result = await reportsCollection.deleteOne(query);
             res.send(result);
         })
 
