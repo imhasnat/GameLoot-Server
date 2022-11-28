@@ -67,6 +67,17 @@ async function run() {
             next();
         }
 
+        // buyer verification
+        const verifyBuyer = async (req, res, next) => {
+            const decodedEmail = req.decoded.email;
+            const query = { email: decodedEmail }
+            const user = await usersCollection.findOne(query);
+            if (user.role !== 'buyer') {
+                return res.status(403).send({ message: 'Forbidden access' })
+            }
+            next();
+        }
+
         // jwt token assign on each login or signin
         app.get('/jwt', async (req, res) => {
             const email = req.query.email;
@@ -103,14 +114,14 @@ async function run() {
             res.send(result);
         })
 
-        // get all categories
+        // get all categories: general
         app.get('/categories', async (req, res) => {
             const result = await categoryCollection.find({}).toArray();
             res.send(result);
         })
 
         // get product by seller email: seller
-        app.get('/products', async (req, res) => {
+        app.get('/products', verifyJWT, async (req, res) => {
             const email = req.query.email;
             const query = { sellerEmail: email };
             const result = await productsCollection.find(query).toArray();
@@ -118,7 +129,7 @@ async function run() {
         })
 
         // add product: seller
-        app.post('/products', async (req, res) => {
+        app.post('/products', verifyJWT, async (req, res) => {
             const product = req.body;
             const result = await productsCollection.insertOne(product);
             res.send(result);
@@ -131,7 +142,7 @@ async function run() {
         })
 
         // add avertise for a product: seller
-        app.post('/product/advertise', async (req, res) => {
+        app.post('/product/advertise', verifyJWT, async (req, res) => {
             const product = req.body;
             console.log(product.productId);
             const result = await advertiseCollection.insertOne(product);
@@ -157,7 +168,7 @@ async function run() {
         })
 
         // delete product by product id: seller
-        app.delete('/product/delete/:id', async (req, res) => {
+        app.delete('/product/delete/:id', verifyJWT, async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
             const result = await productsCollection.deleteOne(query);
@@ -173,11 +184,11 @@ async function run() {
         })
 
         // get all orders: buyer
-        app.get('/booking', async (req, res) => {
+        app.get('/booking', verifyJWT, async (req, res) => {
             const email = req.query.email;
             const query = { email: email };
             const booking = await bookingCollection.find(query).toArray();
-            res.send({ found: true });
+            res.send(booking);
         })
 
         // add booking for a buyer: buyer
@@ -252,9 +263,12 @@ async function run() {
         // delete report : admin
         app.delete('/report/delete/:id', async (req, res) => {
             const id = req.params.id;
-            const query = { _id: ObjectId(id) };
-            const result = await reportsCollection.deleteOne(query);
-            res.send(result);
+            const queryProduct = { _id: ObjectId(id) };
+            const resultProduct = await productsCollection.deleteOne(queryProduct);
+
+            const queryReport = { productId: id };
+            const resultReport = await reportsCollection.deleteOne(queryReport);
+            res.send(resultProduct);
         })
 
         // verify seller badge: admin
